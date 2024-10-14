@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import './App.css'
+import React, { useState, useEffect } from "react";
+import "./App.css";
 
 interface HistoryEntry {
   date: string;
@@ -14,23 +14,25 @@ const App: React.FC = () => {
   const [totalGuesses, setTotalGuesses] = useState<number>(0);
   const [currentStreak, setCurrentStreak] = useState<number>(0);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const [message, setMessage] = useState<string>('');
+  const [message, setMessage] = useState<string | null>(null);
+
+  const totalCorrectGuesses = history.filter((entry) => entry.correct).length;
 
   // Days of the week starting with Monday
   const daysOfWeek = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
   ];
 
   // Load history from localStorage on component mount
   useEffect(() => {
     const storedHistory = JSON.parse(
-      localStorage.getItem('history') || '[]'
+      localStorage.getItem("history") || "[]"
     ) as HistoryEntry[];
     setHistory(storedHistory);
     setTotalGuesses(storedHistory.length);
@@ -58,15 +60,14 @@ const App: React.FC = () => {
         Math.random() * (endDate.getTime() - startDate.getTime())
     );
     setCurrentRandomDate(randomDate);
-    setMessage('');
   };
 
   // Function to format the date as "1st January 2020"
   const formatDate = (date: Date): string => {
     const day = date.getUTCDate();
-    const month = date.toLocaleString('default', {
-      month: 'long',
-      timeZone: 'UTC',
+    const month = date.toLocaleString("default", {
+      month: "long",
+      timeZone: "UTC",
     });
     const year = date.getUTCFullYear();
     const daySuffix = getDaySuffix(day);
@@ -75,16 +76,16 @@ const App: React.FC = () => {
 
   // Function to get the correct suffix for the day
   const getDaySuffix = (day: number): string => {
-    if (day > 3 && day < 21) return 'th'; // handles 11th to 13th
+    if (day > 3 && day < 21) return "th"; // handles 11th to 13th
     switch (day % 10) {
       case 1:
-        return 'st';
+        return "st";
       case 2:
-        return 'nd';
+        return "nd";
       case 3:
-        return 'rd';
+        return "rd";
       default:
-        return 'th';
+        return "th";
     }
   };
 
@@ -105,13 +106,13 @@ const App: React.FC = () => {
 
     const updatedHistory = [...history, newHistoryEntry];
     setHistory(updatedHistory);
-    localStorage.setItem('history', JSON.stringify(updatedHistory));
+    localStorage.setItem("history", JSON.stringify(updatedHistory));
 
     setTotalGuesses(updatedHistory.length);
 
     if (isCorrect) {
       setCurrentStreak(currentStreak + 1);
-      setMessage('✅ Correct!');
+      setMessage("✅ Correct!");
     } else {
       setCurrentStreak(0);
       setMessage(
@@ -128,50 +129,58 @@ const App: React.FC = () => {
 
   return (
     <div style={styles.container}>
-      <h1>Day of the Week Practice</h1>
+      <h1>Day of the Week Test</h1>
+      <p>You may want to learn the <a href="https://en.wikipedia.org/wiki/Doomsday_rule">Doomsday rule</a> for caluclating weekdays.</p>
       <p>
-        What day of the week is{' '}
-        <strong>{formatDate(currentRandomDate)}</strong>?
+        What day of the week is...
+        <h2>{formatDate(currentRandomDate)}</h2>
       </p>
-      <div style={styles.buttonContainer}>
-        {daysOfWeek.map((day, index) => (
-          <button
-            key={index}
-            style={styles.button}
-            onClick={() => handleGuess(index)}
-          >
-            {day}
-          </button>
-        ))}
-      </div>
-      {message && <p style={styles.message}>{message}</p>}
-      <p>Total Guesses: {totalGuesses}</p>
-      <p>Current Streak: {currentStreak}</p>
+      {message === null ? (
+        <div style={styles.buttonContainer}>
+          {daysOfWeek.map((day, index) => (
+            <button
+              key={index}
+              style={styles.button}
+              onClick={() => handleGuess(index)}
+            >
+              {day}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <>
+          <p style={styles.message}>{message}</p>
+          <button onClick={() => setMessage(null)}>New Date</button>
+        </>
+      )}
+      <p>Total answers: {totalGuesses}</p>
+      <p>Total correct answers: {totalCorrectGuesses}</p>
+      <p>Current streak: {currentStreak}</p>
     </div>
   );
 };
 
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
-    textAlign: 'center',
-    fontFamily: 'Arial, sans-serif',
-    marginTop: '50px',
+    textAlign: "center",
+    fontFamily: "Arial, sans-serif",
+    marginTop: "50px",
   },
   buttonContainer: {
-    display: 'inline-block',
-    marginTop: '20px',
+    display: "inline-block",
+    marginTop: "20px",
   },
   button: {
-    display: 'block',
-    width: '150px',
-    padding: '10px',
-    margin: '5px auto',
-    fontSize: '16px',
-    cursor: 'pointer',
+    display: "block",
+    width: "150px",
+    padding: "10px",
+    margin: "5px auto",
+    fontSize: "16px",
+    cursor: "pointer",
   },
   message: {
-    fontSize: '18px',
-    marginTop: '20px',
+    fontSize: "18px",
+    marginTop: "20px",
   },
 };
 
