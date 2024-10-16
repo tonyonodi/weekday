@@ -8,26 +8,101 @@ interface HistoryEntry {
   timestamp: string;
 }
 
+// Days of the week starting with Monday
+const daysOfWeek = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+
+// Function to format the date as "1st January 2020"
+const formatDate = (date: Date): string => {
+  const day = date.getUTCDate();
+  const month = date.toLocaleString("default", {
+    month: "long",
+    timeZone: "UTC",
+  });
+  const year = date.getUTCFullYear();
+  const daySuffix = getDaySuffix(day);
+  return `${day}${daySuffix} ${month} ${year}`;
+};
+
+// Function to get the correct suffix for the day
+const getDaySuffix = (day: number): string => {
+  if (day > 3 && day < 21) return "th"; // handles 11th to 13th
+  switch (day % 10) {
+    case 1:
+      return "st";
+    case 2:
+      return "nd";
+    case 3:
+      return "rd";
+    default:
+      return "th";
+  }
+};
+const Message = ({
+  message,
+  currentRandomDate,
+  handleReset,
+}: {
+  message: "pass" | "fail";
+  currentRandomDate: Date;
+  handleReset: () => void;
+}) => {
+  const correctDay = (currentRandomDate.getUTCDay() + 6) % 7;
+  const year = currentRandomDate.getUTCFullYear();
+  const doomsDay = new Date(`${year}-06-06`).getDay();
+  return (
+    <>
+      <p style={styles.message}>
+        ❌ Incorrect! The correct day was <b>{daysOfWeek[correctDay]}</b>.
+      </p>
+      <p style={styles.message}>
+        And doomsday for <b>{year}</b> was <b>{daysOfWeek[doomsDay]}</b>.
+      </p>
+      <button onClick={handleReset}>New Date</button>
+    </>
+  );
+};
+
+const styles: { [key: string]: React.CSSProperties } = {
+  container: {
+    textAlign: "center",
+    fontFamily: "Arial, sans-serif",
+    marginTop: "50px",
+  },
+  buttonContainer: {
+    display: "inline-block",
+    marginTop: "20px",
+  },
+  button: {
+    display: "block",
+    width: "150px",
+    padding: "10px",
+    margin: "5px auto",
+    fontSize: "16px",
+    cursor: "pointer",
+  },
+  message: {
+    fontSize: "18px",
+    marginTop: "20px",
+  },
+};
+
 const App: React.FC = () => {
   // State variables
   const [currentRandomDate, setCurrentRandomDate] = useState<Date | null>(null);
   const [totalGuesses, setTotalGuesses] = useState<number>(0);
   const [currentStreak, setCurrentStreak] = useState<number>(0);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<"pass" | "fail" | null>(null);
 
   const totalCorrectGuesses = history.filter((entry) => entry.correct).length;
-
-  // Days of the week starting with Monday
-  const daysOfWeek = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
 
   // Load history from localStorage on component mount
   useEffect(() => {
@@ -62,33 +137,6 @@ const App: React.FC = () => {
     setCurrentRandomDate(randomDate);
   };
 
-  // Function to format the date as "1st January 2020"
-  const formatDate = (date: Date): string => {
-    const day = date.getUTCDate();
-    const month = date.toLocaleString("default", {
-      month: "long",
-      timeZone: "UTC",
-    });
-    const year = date.getUTCFullYear();
-    const daySuffix = getDaySuffix(day);
-    return `${day}${daySuffix} ${month} ${year}`;
-  };
-
-  // Function to get the correct suffix for the day
-  const getDaySuffix = (day: number): string => {
-    if (day > 3 && day < 21) return "th"; // handles 11th to 13th
-    switch (day % 10) {
-      case 1:
-        return "st";
-      case 2:
-        return "nd";
-      case 3:
-        return "rd";
-      default:
-        return "th";
-    }
-  };
-
   // Function to handle the user's guess
   const handleGuess = (guess: number) => {
     if (!currentRandomDate) return;
@@ -112,15 +160,11 @@ const App: React.FC = () => {
 
     if (isCorrect) {
       setCurrentStreak(currentStreak + 1);
-      setMessage("✅ Correct!");
+      setMessage("pass");
     } else {
       setCurrentStreak(0);
-      setMessage(
-        `❌ Incorrect! The correct day was ${daysOfWeek[correctDay]}.`
-      );
+      setMessage("fail");
     }
-
-    generateNewDate();
   };
 
   if (!currentRandomDate) {
@@ -130,7 +174,11 @@ const App: React.FC = () => {
   return (
     <div style={styles.container}>
       <h1>Day of the Week Test</h1>
-      <p>You may want to learn the <a href="https://en.wikipedia.org/wiki/Doomsday_rule">Doomsday rule</a> for caluclating weekdays.</p>
+      <p>
+        You may want to learn the{" "}
+        <a href="https://en.wikipedia.org/wiki/Doomsday_rule">Doomsday rule</a>{" "}
+        for caluclating weekdays.
+      </p>
       <p>
         What day of the week is...
         <h2>{formatDate(currentRandomDate)}</h2>
@@ -148,40 +196,20 @@ const App: React.FC = () => {
           ))}
         </div>
       ) : (
-        <>
-          <p style={styles.message}>{message}</p>
-          <button onClick={() => setMessage(null)}>New Date</button>
-        </>
+        <Message
+          message={message}
+          currentRandomDate={currentRandomDate}
+          handleReset={() => {
+            generateNewDate();
+            setMessage(null);
+          }}
+        />
       )}
       <p>Total answers: {totalGuesses}</p>
       <p>Total correct answers: {totalCorrectGuesses}</p>
       <p>Current streak: {currentStreak}</p>
     </div>
   );
-};
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    textAlign: "center",
-    fontFamily: "Arial, sans-serif",
-    marginTop: "50px",
-  },
-  buttonContainer: {
-    display: "inline-block",
-    marginTop: "20px",
-  },
-  button: {
-    display: "block",
-    width: "150px",
-    padding: "10px",
-    margin: "5px auto",
-    fontSize: "16px",
-    cursor: "pointer",
-  },
-  message: {
-    fontSize: "18px",
-    marginTop: "20px",
-  },
 };
 
 export default App;
