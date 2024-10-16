@@ -54,7 +54,8 @@ const Message = ({
 }) => {
   const correctDay = (currentRandomDate.getUTCDay() + 6) % 7;
   const year = currentRandomDate.getUTCFullYear();
-  const doomsDay = new Date(`${year}-06-06`).getDay();
+  const doomsDay = (new Date(`${year}-06-06`).getUTCDay()+ 6) % 7;
+
   return (
     <>
       <p style={styles.message}>
