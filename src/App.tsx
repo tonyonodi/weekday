@@ -46,11 +46,9 @@ const getDaySuffix = (day: number): string => {
   }
 };
 const Message = ({
-  message,
   currentRandomDate,
   handleReset,
 }: {
-  message: "pass" | "fail";
   currentRandomDate: Date;
   handleReset: () => void;
 }) => {
@@ -197,7 +195,6 @@ const App: React.FC = () => {
         </div>
       ) : (
         <Message
-          message={message}
           currentRandomDate={currentRandomDate}
           handleReset={() => {
             generateNewDate();
