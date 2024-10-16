@@ -46,20 +46,23 @@ const getDaySuffix = (day: number): string => {
   }
 };
 const Message = ({
+  message,
   currentRandomDate,
   handleReset,
 }: {
+  message: "pass" | "fail";
   currentRandomDate: Date;
   handleReset: () => void;
 }) => {
   const correctDay = (currentRandomDate.getUTCDay() + 6) % 7;
   const year = currentRandomDate.getUTCFullYear();
-  const doomsDay = (new Date(`${year}-06-06`).getUTCDay()+ 6) % 7;
+  const doomsDay = (new Date(`${year}-06-06`).getUTCDay() + 6) % 7;
 
   return (
     <>
       <p style={styles.message}>
-        ❌ Incorrect! The correct day was <b>{daysOfWeek[correctDay]}</b>.
+        {message === "pass" ? "✅ Correct!" : "❌ Incorrect!"} The day was{" "}
+        <b>{daysOfWeek[correctDay]}</b>.
       </p>
       <p style={styles.message}>
         And doomsday for <b>{year}</b> was <b>{daysOfWeek[doomsDay]}</b>.
@@ -196,6 +199,7 @@ const App: React.FC = () => {
         </div>
       ) : (
         <Message
+          message={message}
           currentRandomDate={currentRandomDate}
           handleReset={() => {
             generateNewDate();
